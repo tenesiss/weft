@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"demp/protocol"
-	"demp/routing"
+	"weft/protocol"
+	"weft/routing"
 )
 
 type Config struct {
@@ -74,18 +74,18 @@ func (a *Authenticator) getCertificate() (*tls.Certificate, error) {
 	return &copy, nil
 }
 
-// certificateID replaces Web PKI validation with DEMP's self-certifying ID.
+// certificateID replaces Web PKI validation with WEFT's self-certifying ID.
 // TLS subsequently verifies possession of this certificate's Ed25519 key.
 func certificateID(certificates []*x509.Certificate, now time.Time) (string, error) {
 	if len(certificates) != 1 {
-		return "", errors.New("expected exactly one DEMP certificate")
+		return "", errors.New("expected exactly one WEFT certificate")
 	}
 	cert := certificates[0]
 	if len(cert.Raw) > 4096 || cert.IsCA || len(cert.UnhandledCriticalExtensions) != 0 || now.Before(cert.NotBefore) || !now.Before(cert.NotAfter) {
-		return "", errors.New("invalid or expired DEMP certificate")
+		return "", errors.New("invalid or expired WEFT certificate")
 	}
 	if cert.KeyUsage != x509.KeyUsageDigitalSignature || len(cert.ExtKeyUsage) != 2 {
-		return "", errors.New("invalid DEMP certificate usage")
+		return "", errors.New("invalid WEFT certificate usage")
 	}
 	server, client := false, false
 	for _, usage := range cert.ExtKeyUsage {
@@ -93,10 +93,10 @@ func certificateID(certificates []*x509.Certificate, now time.Time) (string, err
 		client = client || usage == x509.ExtKeyUsageClientAuth
 	}
 	if !server || !client {
-		return "", errors.New("DEMP certificate must allow both peer roles")
+		return "", errors.New("WEFT certificate must allow both peer roles")
 	}
-	if len(cert.URIs) != 1 || cert.URIs[0].Scheme != "demp" || cert.URIs[0].String() != "demp:"+cert.URIs[0].Opaque {
-		return "", errors.New("missing DEMP identity in certificate")
+	if len(cert.URIs) != 1 || cert.URIs[0].Scheme != "weft" || cert.URIs[0].String() != "weft:"+cert.URIs[0].Opaque {
+		return "", errors.New("missing WEFT identity in certificate")
 	}
 	id := cert.URIs[0].Opaque
 	public, err := protocol.ParseID(id)
@@ -105,7 +105,7 @@ func certificateID(certificates []*x509.Certificate, now time.Time) (string, err
 	}
 	key, ok := cert.PublicKey.(ed25519.PublicKey)
 	if !ok || !bytes.Equal(key, public.SigningKey) || !bytes.Equal(cert.RawIssuer, cert.RawSubject) {
-		return "", errors.New("certificate key does not match DEMP identity")
+		return "", errors.New("certificate key does not match WEFT identity")
 	}
 	if err := cert.CheckSignature(cert.SignatureAlgorithm, cert.RawTBSCertificate, cert.Signature); err != nil {
 		return "", fmt.Errorf("invalid self-signature: %w", err)
@@ -121,7 +121,7 @@ func (a *Authenticator) tlsConfig(expected string, server bool) *tls.Config {
 		GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) { return a.getCertificate() },
 		VerifyConnection: func(state tls.ConnectionState) error {
 			if state.Version != tls.VersionTLS13 || state.NegotiatedProtocol != ALPN {
-				return errors.New("TLS 1.3 and DEMP ALPN required")
+				return errors.New("TLS 1.3 and WEFT ALPN required")
 			}
 			id, err := certificateID(state.PeerCertificates, time.Now())
 			if err != nil {
@@ -192,14 +192,14 @@ func (a *Authenticator) authenticate(ctx context.Context, raw net.Conn, expected
 	if err != nil {
 		return nil, err
 	}
-	material, err := state.ExportKeyingMaterial("EXPORTER-DEMP-POI-v1", []byte(ALPN), 32)
+	material, err := state.ExportKeyingMaterial("EXPORTER-WEFT-POI-v1", []byte(ALPN), 32)
 	if err != nil {
 		return nil, err
 	}
 	var binding [32]byte
 	copy(binding[:], material)
 	if err = a.proveKeys(conn, id, binding, server); err != nil {
-		return nil, fmt.Errorf("DEMP authentication: %w", err)
+		return nil, fmt.Errorf("WEFT authentication: %w", err)
 	}
 	if err = ctx.Err(); err != nil {
 		return nil, err

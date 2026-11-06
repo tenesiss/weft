@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
-const keyfileDomain = "DEMP/KEYFILE/v1\x00"
+const keyfileDomain = "WEFT/KEYFILE/v1\x00"
 
 type keyfile struct {
 	Version    int    `json:"version"`

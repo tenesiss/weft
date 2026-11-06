@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"demp/internal/portmap"
-	"demp/node"
-	"demp/protocol"
+	"weft/internal/portmap"
+	"weft/node"
+	"weft/protocol"
 )
 
 // JSON escaping can require six bytes per payload byte, plus command metadata.

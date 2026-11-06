@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// TransportCertificate binds the full DEMP ID to its Ed25519 TLS key. It is
-// self-signed: trust comes from explicit DEMP identity pinning, not public CAs.
+// TransportCertificate binds the full WEFT ID to its Ed25519 TLS key. It is
+// self-signed: trust comes from explicit WEFT identity pinning, not public CAs.
 // The returned TLS credential contains a private signer; never serialize/log it.
 func (i *Identity) TransportCertificate(now time.Time) (tls.Certificate, error) {
 	if i.ID() == "" {
@@ -25,12 +25,12 @@ func (i *Identity) TransportCertificate(now time.Time) (tls.Certificate, error) 
 	}
 	serial.Add(serial, big.NewInt(1))
 	template := &x509.Certificate{
-		SerialNumber: serial, Subject: pkix.Name{CommonName: "DEMP peer"},
+		SerialNumber: serial, Subject: pkix.Name{CommonName: "WEFT peer"},
 		NotBefore: now.Add(-5 * time.Minute), NotAfter: now.Add(24 * time.Hour),
 		KeyUsage:              x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 		BasicConstraintsValid: true,
-		URIs:                  []*url.URL{{Scheme: "demp", Opaque: i.ID()}},
+		URIs:                  []*url.URL{{Scheme: "weft", Opaque: i.ID()}},
 	}
 	der, err := x509.CreateCertificate(rand.Reader, template, template, i.signingSK.Public(), i.signingSK)
 	if err != nil {

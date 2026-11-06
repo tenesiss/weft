@@ -42,7 +42,7 @@ type PendingProof struct {
 
 func challengeBytes(c Challenge) []byte {
 	var b bytes.Buffer
-	b.WriteString("DEMP/POI-CHALLENGE/v1\x00")
+	b.WriteString("WEFT/POI-CHALLENGE/v1\x00")
 	field(&b, []byte(c.Verifier))
 	field(&b, []byte(c.Subject))
 	field(&b, []byte(c.Binding))
@@ -58,7 +58,7 @@ func challengeID(c Challenge) string {
 
 func responseBytes(c Challenge, nonce []byte) []byte {
 	var b bytes.Buffer
-	b.WriteString("DEMP/POI-RESPONSE/v1\x00")
+	b.WriteString("WEFT/POI-RESPONSE/v1\x00")
 	field(&b, []byte(challengeID(c)))
 	field(&b, nonce)
 	return b.Bytes()

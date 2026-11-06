@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"demp/protocol"
+	"weft/protocol"
 )
 
 var now = time.Unix(1800000000, 0)

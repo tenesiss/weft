@@ -1,4 +1,4 @@
-// Package node connects the DEMP router to real TCP peers and authenticated
+// Package node connects the WEFT router to real TCP peers and authenticated
 // application deliveries. All queues, caches and connection counts are bounded.
 package node
 
@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"demp/protocol"
-	"demp/routing"
-	"demp/transport"
+	"weft/protocol"
+	"weft/routing"
+	"weft/transport"
 )
 
 var ErrClosed = errors.New("node closed")
@@ -190,7 +190,7 @@ func (n *Node) endPending() {
 	n.wg.Done()
 }
 
-// Connect dials an explicit address and pins the full expected DEMP identity.
+// Connect dials an explicit address and pins the full expected WEFT identity.
 // It returns only after mutual TLS and both-key proof complete. It does not
 // perform discovery or silently trust a different identity at the same address.
 func (n *Node) Connect(ctx context.Context, address, expected string) error {

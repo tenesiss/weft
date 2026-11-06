@@ -1,4 +1,4 @@
-module demp
+module weft
 
 go 1.27.0
 

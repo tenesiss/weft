@@ -1,4 +1,4 @@
-// Package protocol implements DEMP identities, the experimental v2 encrypted
+// Package protocol implements WEFT identities, the experimental v2 encrypted
 // message format, and the independently versioned v1 proof-of-possession exchange.
 package protocol
 

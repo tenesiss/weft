@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"demp/protocol"
+	"weft/protocol"
 )
 
 func identity(t *testing.T) *protocol.Identity {

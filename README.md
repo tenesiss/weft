@@ -9,20 +9,22 @@ Alice --> Relay-1 --> Relay-2 --> Bob
           ciphertext only       decrypt + verify
 ```
 
-This repository implements the protocol, gossip router, and a **real TCP node** with automatic router port mapping. Peer traffic uses custom Weft frames over mutually authenticated TLS 1.3. Router port mapping uses a separate control connection. The original `demp-demo` remains an in-process packet-loss simulation; `cmd/demp` runs independent networked processes.
+This repository implements the protocol, gossip router, and a **real TCP node** with automatic router port mapping. Peer traffic uses custom Weft frames over mutually authenticated TLS 1.3. Router port mapping uses a separate control connection. The `weft-demo` command runs an in-process packet-loss simulation; `cmd/weft` runs independent networked processes.
 
 ## Run
 
 Requires Go 1.27 or later.
 
-The examples build the CLI as `weft.exe`. The current source directories (`cmd/demp` and `cmd/demp-demo`), Go module/import paths (`demp/...`), password variable (`DEMP_KEY_PASSWORD`), and wire-format constants retain their implementation names; the commands and protocol specifications below use those exact identifiers.
+The examples build the CLI as `weft.exe` from `cmd/weft`. The Go module and import paths use `weft`, and the CLI reads its key-file passphrase from `WEFT_KEY_PASSWORD`.
+
+The full rename also changes protocol identifiers and cryptographic domains. All peers must use this version; messages, proofs, and encrypted key files from before the rename are incompatible. Keep existing key files if you need access through an older build, and use new key-file paths when generating identities for this version.
 
 ```sh
 go mod download
 go test '-overlay=tests/overlay.json' ./...
 go vet '-overlay=tests/overlay.json' ./...
-go run ./cmd/demp-demo
-go build -o bin/weft.exe ./cmd/demp
+go run ./cmd/weft-demo
+go build -o bin/weft.exe ./cmd/weft
 ```
 
 All tests live under `tests/`, mirroring the production package directories. Run the commands above from the repository root. The Go overlay compiles the tests with their original packages so they can still exercise private internals; include `-overlay=tests/overlay.json` for focused tests, coverage, race checks, and fuzzing as well. See [AGENTS.md](AGENTS.md) for the test-placement convention.
@@ -31,18 +33,18 @@ On Windows, if Go is installed but absent from `PATH`:
 
 ```powershell
 & 'C:\Program Files\Go\bin\go.exe' test '-overlay=tests/overlay.json' ./...
-& 'C:\Program Files\Go\bin\go.exe' run ./cmd/demp-demo
+& 'C:\Program Files\Go\bin\go.exe' run ./cmd/weft-demo
 ```
 
 The demo proves ownership of Bob's two private keys, checks that Alice's source identity and signature are hidden on the wire, drops the first relay transmission, recovers it with `IHAVE`/`IWANT`, and lets Bob decrypt and authenticate the body.
 
 ## Run two networked nodes
 
-The following PowerShell example creates two local test identities. Use a strong passphrase; each terminal must set `DEMP_KEY_PASSWORD` before loading its key. Go can also be invoked by its full Windows path shown above.
+The following PowerShell example creates two local test identities. Use a strong passphrase; each terminal must set `WEFT_KEY_PASSWORD` before loading its key. Go can also be invoked by its full Windows path shown above.
 
 ```powershell
-go build -o bin/weft.exe ./cmd/demp
-$env:DEMP_KEY_PASSWORD = Read-Host 'Key-file passphrase' -MaskInput
+go build -o bin/weft.exe ./cmd/weft
+$env:WEFT_KEY_PASSWORD = Read-Host 'Key-file passphrase' -MaskInput
 .\bin\weft.exe keygen -key alice.key.json
 .\bin\weft.exe keygen -key bob.key.json
 ```
@@ -52,7 +54,7 @@ Each command prints its public Weft ID. Key files contain encrypted secrets and 
 Start Bob in one terminal:
 
 ```powershell
-$env:DEMP_KEY_PASSWORD = Read-Host 'Key-file passphrase' -MaskInput
+$env:WEFT_KEY_PASSWORD = Read-Host 'Key-file passphrase' -MaskInput
 $alice = .\bin\weft.exe id -key alice.key.json
 .\bin\weft.exe run -key bob.key.json -listen 127.0.0.1:9002 -allow $alice
 ```
@@ -60,7 +62,7 @@ $alice = .\bin\weft.exe id -key alice.key.json
 Start Alice in another terminal:
 
 ```powershell
-$env:DEMP_KEY_PASSWORD = Read-Host 'Key-file passphrase' -MaskInput
+$env:WEFT_KEY_PASSWORD = Read-Host 'Key-file passphrase' -MaskInput
 $bob = .\bin\weft.exe id -key bob.key.json
 .\bin\weft.exe run -key alice.key.json -listen 127.0.0.1:9001 -peer "$bob@127.0.0.1:9002"
 ```
@@ -176,7 +178,7 @@ fmt.Println(body.Source, string(body.Payload))
 // Use body.ContentID() privately for application-level replay suppression.
 ```
 
-Imports: `demp/protocol`, `time`, and `fmt`. The local module name is `demp`; choose a repository module path before publishing it.
+Imports: `weft/protocol`, `time`, and `fmt`. The local module name is `weft`; choose a repository module path before publishing it.
 
 Version 2 changes `Message.Body` to a ciphertext string and moves `BodySignature` into the encrypted `Body`. The public envelope contains only `version`, `messageID`, `target`, `expires_at`, and `body`. Version 1 messages are rejected. Replace `Message.Verify` with `ValidateEnvelope` for relays and `OpenBody` for recipient authentication. `Open` remains available when only the verified payload is needed; the separate POI exchange stays at version 1.
 

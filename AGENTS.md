@@ -3,7 +3,7 @@
 ## Test placement
 
 - Save all automated tests, test helpers, and fixtures under the repository-root `tests/` directory. Do not put `_test.go` files beside production code.
-- Mirror the production package path: tests for `protocol/` belong in `tests/protocol/`, and tests for `cmd/demp/` belong in `tests/cmd/demp/`.
+- Mirror the production package path: tests for `protocol/` belong in `tests/protocol/`, and tests for `cmd/weft/` belong in `tests/cmd/weft/`.
 - Keep each Go test's original package declaration. Tests may access private package members; do not export application internals just to relocate tests.
 - Maintain `tests/overlay.json` when adding, moving, or deleting test Go files. For each file, map its virtual production-package path to its real path under `tests/`, then map that real path to an empty string so Go does not also compile it as a separate package. For example:
 

@@ -1,5 +1,5 @@
-// demp runs a real DEMP TCP node. Local commands use command:JSON lines on
-// stdin; the network uses TLS-secured DEMP binary frames, never HTTP.
+// weft runs a real WEFT TCP node. Local commands use command:JSON lines on
+// stdin; the network uses TLS-secured WEFT binary frames, never HTTP.
 package main
 
 import (
@@ -16,9 +16,9 @@ import (
 	"sync"
 	"syscall"
 
-	"demp/internal/portmap"
-	"demp/node"
-	"demp/protocol"
+	"weft/internal/portmap"
+	"weft/node"
+	"weft/protocol"
 )
 
 type stringsFlag []string
@@ -36,17 +36,17 @@ func main() {
 }
 
 func password() ([]byte, error) {
-	value := []byte(os.Getenv("DEMP_KEY_PASSWORD"))
-	_ = os.Unsetenv("DEMP_KEY_PASSWORD")
+	value := []byte(os.Getenv("WEFT_KEY_PASSWORD"))
+	_ = os.Unsetenv("WEFT_KEY_PASSWORD")
 	if len(value) < 12 {
-		return nil, errors.New("set DEMP_KEY_PASSWORD to a strong passphrase of at least 12 bytes")
+		return nil, errors.New("set WEFT_KEY_PASSWORD to a strong passphrase of at least 12 bytes")
 	}
 	return value, nil
 }
 
 func run(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: demp keygen|id|run -key FILE (run: -listen ADDR -nat auto|off -allow ID|any -peer ID@ADDR)")
+		return errors.New("usage: weft keygen|id|run -key FILE (run: -listen ADDR -nat auto|off -allow ID|any -peer ID@ADDR)")
 	}
 	command := args[0]
 	if command != "keygen" && command != "id" && command != "run" {
@@ -57,7 +57,7 @@ func run(ctx context.Context, args []string) error {
 	listen := fs.String("listen", "0.0.0.0:9000", "TCP listen address; empty for outbound-only")
 	natMode := fs.String("nat", "auto", "router TCP port mapping: auto or off")
 	var allowed, peers stringsFlag
-	fs.Var(&allowed, "allow", "allowed inbound DEMP ID, or any for open admission with both-key authentication (repeatable)")
+	fs.Var(&allowed, "allow", "allowed inbound WEFT ID, or any for open admission with both-key authentication (repeatable)")
 	fs.Var(&peers, "peer", "pinned peer ID@host:port to maintain (repeatable)")
 	allowUnknown := fs.Bool("allow-unknown", false, "alias for -allow any; still requires both-key authentication")
 	if err := fs.Parse(args[1:]); err != nil {

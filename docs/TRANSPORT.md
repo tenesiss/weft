@@ -1,15 +1,15 @@
 # Weft TCP transport v1
 
-The current transport retains its exact wire identifiers: the `DEMP` frame magic, `demp/1` ALPN, `demp:` certificate URI scheme and `EXPORTER-DEMP-POI-v1` exporter label. Key files likewise retain the `DEMP/KEYFILE/v1\0` domain and the CLI reads `DEMP_KEY_PASSWORD`. These are implementation constants, independent of the Weft project name.
+The transport uses the `WEFT` frame magic, `weft/1` ALPN, `weft:` certificate URI scheme and `EXPORTER-WEFT-POI-v1` exporter label. Key files use the `WEFT/KEYFILE/v1\0` domain and the CLI reads `WEFT_KEY_PASSWORD`. These identifiers and domains are incompatible with builds and encrypted key files from before the rename.
 
 The implementation uses **custom Weft frames over TCP secured by TLS 1.3**. The separate router-mapping control plane uses UDP for PCP/NAT-PMP and HTTP/SOAP for UPnP. TLS supplies the reviewed connection cryptography; Weft supplies peer identity, the both-key proof exchange, packet framing, and routing. Transport version 1 carries message version 2.
 
 ## Trust and connection setup
 
 1. Dial a configured TCP address. Outbound calls require the complete expected Weft ID; addresses never establish identity by themselves.
-2. Negotiate TLS 1.3 with ALPN `demp/1`. Both sides present an Ed25519 self-signed certificate containing exactly one `demp:<encryption_pk.signing_pk>` URI. The certificate public key must equal the ID's signing key, its signature must verify, and its validity and key usages must be acceptable.
+2. Negotiate TLS 1.3 with ALPN `weft/1`. Both sides present an Ed25519 self-signed certificate containing exactly one `weft:<encryption_pk.signing_pk>` URI. The certificate public key must equal the ID's signing key, its signature must verify, and its validity and key usages must be acceptable.
 3. The dialer checks its explicit identity pin. The listener checks its configured inbound identity allowlist; the default admits nobody. `AllowUnknownPeers` / `-allow any` (also `-allow-unknown`) admits any identity that proves both private keys, with certificate validation, mutual proofs, outbound pins, message validation, and resource limits enforced.
-4. Derive a 32-byte session binding with `ExportKeyingMaterial("EXPORTER-DEMP-POI-v1", "demp/1", 32)`.
+4. Derive a 32-byte session binding with `ExportKeyingMaterial("EXPORTER-WEFT-POI-v1", "weft/1", 32)`.
 5. Perform the mutual POI exchange below inside TLS. Only after both signing and encryption keys have been proven can either side exchange routing packets.
 
 The client configuration sets `InsecureSkipVerify` to replace hostname/public-CA verification with mandatory Weft self-certificate validation and exact identity pinning in `VerifyConnection`. The server requires a client certificate and runs the same certificate validation plus its allowlist. TLS resumption/session tickets are disabled so every connection runs the full authentication exchange.
@@ -42,7 +42,7 @@ Every Weft frame is inside TLS and has a 12-byte header:
 
 | Offset | Size | Meaning |
 | --- | --- | --- |
-| 0 | 4 | ASCII `DEMP` |
+| 0 | 4 | ASCII `WEFT` |
 | 4 | 1 | Transport version `1` |
 | 5 | 1 | Frame type |
 | 6 | 2 | Reserved, must be zero |
@@ -101,6 +101,6 @@ When an envelope targets this node, it is decrypted with `OpenBody`, its signatu
 
 The CLI uses encrypted key files. The v1 file stores `version`, a random 16-byte `salt`, a random 12-byte `nonce`, and an 80-byte `ciphertext` as JSON. Byte fields use standard padded base64. The plaintext is the 32-byte X25519 secret followed by the 32-byte Ed25519 seed.
 
-The encryption key is derived with scrypt (`N=32768`, `r=8`, `p=1`, 32-byte result), then AES-256-GCM encrypts the 64-byte secret with associated data `DEMP/KEYFILE/v1\0`. Parameters are fixed and parsing is capped at 4 KiB before derivation. A password must have at least 12 bytes; use a long, high-entropy passphrase. Existing key files are never overwritten. Unix mode 0600 is requested; Windows protection also depends on the password and directory ACLs.
+The encryption key is derived with scrypt (`N=32768`, `r=8`, `p=1`, 32-byte result), then AES-256-GCM encrypts the 64-byte secret with associated data `WEFT/KEYFILE/v1\0`. Parameters are fixed and parsing is capped at 4 KiB before derivation. A password must have at least 12 bytes; use a long, high-entropy passphrase. Existing key files are never overwritten. Unix mode 0600 is requested; Windows protection also depends on the password and directory ACLs.
 
-The CLI reads `DEMP_KEY_PASSWORD`, removes it from its own process environment, and clears its byte buffer after use. The calling shell retains its copy until it is cleared or the shell exits.
+The CLI reads `WEFT_KEY_PASSWORD`, removes it from its own process environment, and clears its byte buffer after use. The calling shell retains its copy until it is cleared or the shell exits.

@@ -74,7 +74,7 @@ func discoverUPnPWithSearch(ctx context.Context, listener netip.AddrPort, owner 
 				default:
 					continue
 				}
-				mappings = append(mappings, &upnpMapping{client: client, local: netip.AddrPortFrom(ip.Unmap(), listener.Port()), externalPort: listener.Port(), description: fmt.Sprintf("DEMP-%x", owner)})
+				mappings = append(mappings, &upnpMapping{client: client, local: netip.AddrPortFrom(ip.Unmap(), listener.Port()), externalPort: listener.Port(), description: fmt.Sprintf("WEFT-%x", owner)})
 			}
 		}
 	}

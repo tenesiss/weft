@@ -14,14 +14,14 @@ import (
 	"testing"
 	"time"
 
-	"demp/node"
-	"demp/protocol"
+	"weft/node"
+	"weft/protocol"
 )
 
 // Run the actual CLI entry point in a subprocess so flags, password handling,
 // stdin cancellation, and JSON events are tested without replacing global I/O.
 func TestCLIProcess(t *testing.T) {
-	if os.Getenv("DEMP_CLI_TEST") != "1" {
+	if os.Getenv("WEFT_CLI_TEST") != "1" {
 		return
 	}
 	separator := slices.Index(os.Args, "--")
@@ -51,7 +51,7 @@ func startCLI(t *testing.T, id *protocol.Identity, flags ...string) *cliProcess 
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
 	args := append([]string{"-test.run=^TestCLIProcess$", "--", "run", "-key", path, "-listen", "127.0.0.1:0"}, flags...)
 	cmd := exec.CommandContext(ctx, os.Args[0], args...)
-	cmd.Env = append(os.Environ(), "DEMP_CLI_TEST=1", "DEMP_KEY_PASSWORD="+passphrase)
+	cmd.Env = append(os.Environ(), "WEFT_CLI_TEST=1", "WEFT_KEY_PASSWORD="+passphrase)
 	p := &cliProcess{events: make(chan map[string]json.RawMessage, 64), done: make(chan struct{}), cancel: cancel}
 	cmd.Stderr = &p.stderr
 	var err error
@@ -288,7 +288,7 @@ func TestCLINATFlagValidationAndDefaults(t *testing.T) {
 		t.Fatal(err)
 	}
 	cmd := exec.Command(os.Args[0], "-test.run=^TestCLIProcess$", "--", "run", "-h")
-	cmd.Env = append(os.Environ(), "DEMP_CLI_TEST=1")
+	cmd.Env = append(os.Environ(), "WEFT_CLI_TEST=1")
 	help, _ := cmd.CombinedOutput()
 	if !bytes.Contains(help, []byte(`default "0.0.0.0:9000"`)) || !bytes.Contains(help, []byte(`default "auto"`)) {
 		t.Fatalf("wrong defaults: %s", help)

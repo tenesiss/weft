@@ -1,4 +1,4 @@
-// Package transport carries DEMP frames over mutually authenticated TLS 1.3/TCP.
+// Package transport carries WEFT frames over mutually authenticated TLS 1.3/TCP.
 // It does not use HTTP, HTTPS, WebSockets, or an external messaging protocol.
 package transport
 
@@ -7,11 +7,11 @@ import (
 	"errors"
 	"io"
 
-	"demp/routing"
+	"weft/routing"
 )
 
 const (
-	ALPN                = "demp/1"
+	ALPN                = "weft/1"
 	wireVersion    byte = 1
 	frameChallenge byte = 1
 	frameProof     byte = 2
@@ -44,17 +44,17 @@ func readFrame(r io.Reader) (byte, []byte, error) {
 	if _, err := io.ReadFull(r, header[:]); err != nil {
 		return 0, nil, err
 	}
-	if string(header[:4]) != "DEMP" || header[4] != wireVersion || header[6] != 0 || header[7] != 0 {
-		return 0, nil, errors.New("invalid DEMP frame header")
+	if string(header[:4]) != "WEFT" || header[4] != wireVersion || header[6] != 0 || header[7] != 0 {
+		return 0, nil, errors.New("invalid WEFT frame header")
 	}
 	kind := header[5]
 	limit, known := frameLimit(kind)
 	size := binary.BigEndian.Uint32(header[8:])
 	if !known || uint64(size) > uint64(limit) {
-		return 0, nil, errors.New("unknown or oversized DEMP frame")
+		return 0, nil, errors.New("unknown or oversized WEFT frame")
 	}
 	if limit > 0 && size == 0 {
-		return 0, nil, errors.New("empty DEMP data frame")
+		return 0, nil, errors.New("empty WEFT data frame")
 	}
 	data := make([]byte, int(size))
 	if _, err := io.ReadFull(r, data); err != nil {
@@ -66,10 +66,10 @@ func readFrame(r io.Reader) (byte, []byte, error) {
 func writeFrame(w io.Writer, kind byte, data []byte) error {
 	limit, known := frameLimit(kind)
 	if !known || len(data) > limit || (limit > 0 && len(data) == 0) {
-		return errors.New("invalid outbound DEMP frame")
+		return errors.New("invalid outbound WEFT frame")
 	}
 	var header [headerSize]byte
-	copy(header[:4], "DEMP")
+	copy(header[:4], "WEFT")
 	header[4], header[5] = wireVersion, kind
 	binary.BigEndian.PutUint32(header[8:], uint32(len(data)))
 	for _, part := range [][]byte{header[:], data} {

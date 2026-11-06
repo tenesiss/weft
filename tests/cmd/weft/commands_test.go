@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"demp/protocol"
+	"weft/protocol"
 )
 
 func testIdentity(t *testing.T) *protocol.Identity {

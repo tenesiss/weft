@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"demp/node"
+	"weft/node"
 )
 
 func TestPeerManagerCancelsPendingDial(t *testing.T) {

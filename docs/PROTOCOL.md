@@ -1,8 +1,8 @@
 # Weft v2 wire protocol
 
-Version 2 encrypts the complete signed body. It replaces the incompatible v1 message format; v1 messages are rejected. Identity encoding and the independently versioned v1 proof-of-possession exchange remain unchanged.
+Version 2 encrypts the complete signed body. It replaces the incompatible v1 message format; v1 messages are rejected. Identity encoding remains unchanged, and the proof-of-possession exchange is independently versioned at v1.
 
-The literal `DEMP/...` domain separators below remain part of the current wire format. The Weft project name does not change these bytes or the encoded messages.
+The literal `WEFT/...` domain separators below are part of the wire format. Messages and proofs created with the domains used before the rename are incompatible.
 
 ## Identity
 
@@ -52,7 +52,7 @@ The inner and outer `version`, `target`, and `expires_at` MUST match exactly. Th
 `U32(x)` and `U64(x)` mean unsigned big-endian integers. `LP(s)` means `U32(byte length of s) || UTF-8(s)`. `\0` means one zero byte. IDs and nonce are encoded as their textual strings; **payload bytes are decoded before signing**. JSON whitespace, object order and payload base64 presentation do not participate in the signature.
 
 ```text
-signed_bytes = "DEMP/BODY/v2\0"
+signed_bytes = "WEFT/BODY/v2\0"
             || U32(body.version)
             || LP(body.source)
             || LP(body.target)
@@ -67,7 +67,7 @@ plaintext = UTF8(JSON(body_including_signature))
 ciphertext = SealAnonymous(plaintext, recipient.encryption_pk)
 envelope.body = base64url(ciphertext)
 
-envelope_bytes = "DEMP/ENVELOPE/v2\0"
+envelope_bytes = "WEFT/ENVELOPE/v2\0"
               || U32(envelope.version)
               || LP(envelope.target)
               || U64(envelope.expires_at)
@@ -97,7 +97,7 @@ The envelope body, IDs, nonce, signature and hashes use canonical unpadded base6
 The router deduplicates outer envelope IDs until their public expiry. All open/parse methods are stateless. For recipient application replay protection across re-encryption or restarts, use a successfully verified body's private content ID:
 
 ```text
-contentID = base64url(SHA256("DEMP/CONTENT/v2\0"
+contentID = base64url(SHA256("WEFT/CONTENT/v2\0"
                         || signed_bytes || LP(body.body_signature)))
 ```
 
@@ -107,7 +107,7 @@ Encrypting source and signature keeps original-sender metadata inside the body. 
 
 ## Proof of identity / possession
 
-This separate exchange retains its v1 domains. Before granting privileges to an identity, establish an authenticated transport session, pin the expected verifier identity, and obtain a 32-byte session binding independently at both ends, such as a TLS exporter. A self-asserted peer ID or remote-supplied binding is insufficient. Keep this exchange inside that session; do not attach its identities or signatures to gossip messages.
+This separate exchange uses the v1 domains below. Before granting privileges to an identity, establish an authenticated transport session, pin the expected verifier identity, and obtain a 32-byte session binding independently at both ends, such as a TLS exporter. A self-asserted peer ID or remote-supplied binding is insufficient. Keep this exchange inside that session; do not attach its identities or signatures to gossip messages.
 
 1. The verifier generates a random 32-byte secret and seals it to the subject's encryption public key.
 2. The verifier signs a challenge containing verifier ID, subject ID, session binding, expiry, and ciphertext. It retains the secret in local `PendingProof` state.
@@ -117,14 +117,14 @@ This separate exchange retains its v1 domains. Before granting privileges to an 
 Exact encoding, with the same `LP` and `U64` definitions:
 
 ```text
-challenge_bytes = "DEMP/POI-CHALLENGE/v1\0"
+challenge_bytes = "WEFT/POI-CHALLENGE/v1\0"
                || LP(verifier) || LP(subject) || LP(binding)
                || U64(expires_at) || LP(ciphertext)
 
 challenge.signature = base64url(Ed25519.Sign(verifier.signing_sk, challenge_bytes))
 challenge_id = base64url(SHA256(challenge_bytes))
 
-response_bytes = "DEMP/POI-RESPONSE/v1\0" || LP(challenge_id)
+response_bytes = "WEFT/POI-RESPONSE/v1\0" || LP(challenge_id)
               || U32(32) || secret_raw_bytes
 
 proof = { challenge_id, signature: base64url(Ed25519.Sign(subject.signing_sk, response_bytes)) }

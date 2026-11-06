@@ -1,4 +1,4 @@
-// demp-demo exercises four nodes through a lossy in-process transport.
+// weft-demo exercises four nodes through a lossy in-process transport.
 package main
 
 import (
@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"demp/protocol"
-	"demp/routing"
+	"weft/protocol"
+	"weft/routing"
 )
 
 type node struct {
@@ -57,7 +57,7 @@ func run() error {
 			return err
 		}
 	}
-	fmt.Printf("DEMP v%d: Alice <-> Relay-1 <-> Relay-2 <-> Bob (in-process)\n", protocol.Version)
+	fmt.Printf("WEFT v%d: Alice <-> Relay-1 <-> Relay-2 <-> Bob (in-process)\n", protocol.Version)
 	// Simulate the session binding that a real authenticated transport supplies.
 	var binding [32]byte
 	if _, err := rand.Read(binding[:]); err != nil {

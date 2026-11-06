@@ -52,7 +52,7 @@ type Message struct {
 // signature itself is excluded; JSON object order and whitespace are irrelevant.
 func canonicalBody(b Body) []byte {
 	var out bytes.Buffer
-	out.WriteString("DEMP/BODY/v2\x00")
+	out.WriteString("WEFT/BODY/v2\x00")
 	_ = binary.Write(&out, binary.BigEndian, uint32(b.Version))
 	field(&out, []byte(b.Source))
 	field(&out, []byte(b.Target))
@@ -67,7 +67,7 @@ func canonicalBody(b Body) []byte {
 // it; only the recipient can authenticate the encrypted body and routing fields.
 func envelopeID(m Message) string {
 	var out bytes.Buffer
-	out.WriteString("DEMP/ENVELOPE/v2\x00")
+	out.WriteString("WEFT/ENVELOPE/v2\x00")
 	_ = binary.Write(&out, binary.BigEndian, uint32(m.Version))
 	field(&out, []byte(m.Target))
 	_ = binary.Write(&out, binary.BigEndian, uint64(m.ExpiresAt))
@@ -81,7 +81,7 @@ func envelopeID(m Message) string {
 // Keep this ID private: publishing it would make different encryptions linkable.
 func (b Body) ContentID() string {
 	var out bytes.Buffer
-	out.WriteString("DEMP/CONTENT/v2\x00")
+	out.WriteString("WEFT/CONTENT/v2\x00")
 	out.Write(canonicalBody(b))
 	field(&out, []byte(b.BodySignature))
 	hash := sha256.Sum256(out.Bytes())

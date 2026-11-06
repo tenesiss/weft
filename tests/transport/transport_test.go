@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"demp/protocol"
-	"demp/routing"
+	"weft/protocol"
+	"weft/routing"
 )
 
 func identity(t testing.TB) *protocol.Identity {
@@ -291,7 +291,7 @@ func TestCapturedProofCannotAuthenticateAnotherTLSSession(t *testing.T) {
 		}
 		_ = client.SetDeadline(time.Now().Add(2 * time.Second))
 		state := client.ConnectionState()
-		material, err := state.ExportKeyingMaterial("EXPORTER-DEMP-POI-v1", []byte(ALPN), 32)
+		material, err := state.ExportKeyingMaterial("EXPORTER-WEFT-POI-v1", []byte(ALPN), 32)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -411,7 +411,7 @@ func TestOversizedFrameAndIdlePeerClosed(t *testing.T) {
 		t.Fatal(err)
 	}
 	header := make([]byte, headerSize)
-	copy(header, "DEMP")
+	copy(header, "WEFT")
 	header[4], header[5] = wireVersion, framePacket
 	binary.BigEndian.PutUint32(header[8:], uint32(routing.MaxPacketBytes+1))
 	if _, err := client.conn.Write(header); err != nil {
@@ -486,6 +486,6 @@ func FuzzReadFrame(f *testing.F) {
 	var valid bytes.Buffer
 	_ = writeFrame(&valid, framePing, nil)
 	f.Add(valid.Bytes())
-	f.Add([]byte("DEMP"))
+	f.Add([]byte("WEFT"))
 	f.Fuzz(func(t *testing.T, data []byte) { _, _, _ = readFrame(bytes.NewReader(data)) })
 }

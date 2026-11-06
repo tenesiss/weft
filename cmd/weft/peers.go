@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"demp/node"
-	"demp/protocol"
+	"weft/node"
+	"weft/protocol"
 )
 
 type peerEndpoint struct {

@@ -115,7 +115,7 @@ func (f *fakeUPnP) DeletePortMappingCtx(_ context.Context, _ string, external ui
 
 func TestUPnPCollisionRenewalAndOwnedCleanup(t *testing.T) {
 	f := &fakeUPnP{entries: map[uint16]upnpEntry{9000: {8000, "192.168.1.99", true, "other app", 100}}}
-	m := &upnpMapping{client: f, local: netip.MustParseAddrPort("192.168.1.20:9000"), externalPort: 9000, description: "DEMP-test"}
+	m := &upnpMapping{client: f, local: netip.MustParseAddrPort("192.168.1.20:9000"), externalPort: 9000, description: "WEFT-test"}
 	l, err := m.renew(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -142,7 +142,7 @@ func TestUPnPCollisionRenewalAndOwnedCleanup(t *testing.T) {
 
 func TestUPnPPermanentLeaseAndReplacement(t *testing.T) {
 	f := &fakeUPnP{entries: map[uint16]upnpEntry{}, onlyPermanent: true}
-	m := &upnpMapping{client: f, local: netip.MustParseAddrPort("192.168.1.20:9000"), externalPort: 9000, description: "DEMP-test"}
+	m := &upnpMapping{client: f, local: netip.MustParseAddrPort("192.168.1.20:9000"), externalPort: 9000, description: "WEFT-test"}
 	l, err := m.renew(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -209,7 +209,7 @@ func TestUPnPSOAPLifecycle(t *testing.T) {
 	defer server.Close()
 	endpoint, _ := url.Parse(server.URL)
 	client := &internetgateway2.WANIPConnection1{ServiceClient: goupnp.ServiceClient{SOAPClient: soap.NewSOAPClient(*endpoint)}}
-	m := &upnpMapping{client: client, local: netip.MustParseAddrPort("192.168.1.20:9000"), externalPort: 9000, description: "DEMP-test"}
+	m := &upnpMapping{client: client, local: netip.MustParseAddrPort("192.168.1.20:9000"), externalPort: 9000, description: "WEFT-test"}
 	if l, err := m.renew(context.Background()); err != nil || l.address.String() != "203.0.113.40:9000" {
 		t.Fatal(l, err)
 	}
