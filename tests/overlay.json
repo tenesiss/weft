@@ -1,0 +1,28 @@
+{
+  "Replace": {
+    "cmd/demp/commands_test.go": "tests/cmd/demp/commands_test.go",
+    "cmd/demp/main_test.go": "tests/cmd/demp/main_test.go",
+    "cmd/demp/peers_test.go": "tests/cmd/demp/peers_test.go",
+    "internal/portmap/manager_test.go": "tests/internal/portmap/manager_test.go",
+    "internal/portmap/udp_test.go": "tests/internal/portmap/udp_test.go",
+    "internal/portmap/upnp_test.go": "tests/internal/portmap/upnp_test.go",
+    "node/node_test.go": "tests/node/node_test.go",
+    "protocol/keyfile_test.go": "tests/protocol/keyfile_test.go",
+    "protocol/message_test.go": "tests/protocol/message_test.go",
+    "protocol/proof_test.go": "tests/protocol/proof_test.go",
+    "routing/router_test.go": "tests/routing/router_test.go",
+    "transport/transport_test.go": "tests/transport/transport_test.go",
+    "tests/cmd/demp/commands_test.go": "",
+    "tests/cmd/demp/main_test.go": "",
+    "tests/cmd/demp/peers_test.go": "",
+    "tests/internal/portmap/manager_test.go": "",
+    "tests/internal/portmap/udp_test.go": "",
+    "tests/internal/portmap/upnp_test.go": "",
+    "tests/node/node_test.go": "",
+    "tests/protocol/keyfile_test.go": "",
+    "tests/protocol/message_test.go": "",
+    "tests/protocol/proof_test.go": "",
+    "tests/routing/router_test.go": "",
+    "tests/transport/transport_test.go": ""
+  }
+}

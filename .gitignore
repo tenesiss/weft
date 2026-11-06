@@ -1,0 +1,7 @@
+/bin/
+/coverage.out
+*.key.json
+*.test
+*.exe
+key.txt
+.env
